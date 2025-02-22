@@ -8,16 +8,17 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class CustomFlammableBlocksConfig {
     public boolean enabled = true;
-    public List<String> BURNABLE_BLOCKS = Arrays.asList(
-            "minecraft:stone", // Default
+    public List<String> BURNABLE_BLOCKS = new ArrayList<>(Arrays.asList(
+            "minecraft:stone",
             "minecraft:cobblestone",
             "minecraft:bricks"
-    );
+    ));
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static Path configPath;

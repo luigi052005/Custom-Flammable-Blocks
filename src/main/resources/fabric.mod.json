@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "flammableblocks",
   "version": "${version}",
-  "name": "FlammableBlocks",
+  "name": "Custom Flammable Blocks",
   "description": "Fire is great",
   "authors": ["Luigi"],
   "contact": {},

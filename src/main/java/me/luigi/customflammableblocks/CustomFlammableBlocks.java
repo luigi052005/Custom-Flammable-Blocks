@@ -83,7 +83,13 @@ public class CustomFlammableBlocks implements ModInitializer {
     }
 
     public void resetAllFlammable() {
-        for (Block block : Registries.BLOCK) {
+        for (String id : config.BURNABLE_BLOCKS) {
+            Identifier identifier = Identifier.tryParse(id);
+            if (identifier == null) {
+                LOG.error("Invalid block ID: {}", id);
+                continue;
+            }
+            Block block = Registries.BLOCK.get(identifier);
             resetFlammable(block);
         }
     }

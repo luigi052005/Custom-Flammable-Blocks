@@ -14,6 +14,7 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 
@@ -49,11 +50,11 @@ public class Commands {
                 .then(CommandManager.literal("reset")
                         .requires(source -> source.hasPermissionLevel(2))
                         .executes(context -> {
-                            mod.config.BURNABLE_BLOCKS = Arrays.asList(
+                            mod.config.BURNABLE_BLOCKS = new ArrayList<>(Arrays.asList(
                                     "minecraft:stone", // Default
                                     "minecraft:cobblestone",
                                     "minecraft:bricks"
-                            );
+                            ));
                             mod.config.save();
                             context.getSource().sendMessage(Text.literal("Config reset!"));
                             return 1;
@@ -152,7 +153,7 @@ public class Commands {
                                             mod.config.save();
 
                                             Block block = Registries.BLOCK.get(new Identifier(blockID));
-                                            mod.resetFlammable(block);
+                                            mod.removeFlammable(block);
 
                                             source.sendMessage(Text.literal("Removed: " + blockID));
                                             return 1;
