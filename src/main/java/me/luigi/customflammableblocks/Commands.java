@@ -106,9 +106,9 @@ public class Commands {
 
                                     for (Identifier id : Registries.BLOCK.getIds()) {
                                         Block block = Registries.BLOCK.get(id);
-                                        // skip air & fire
-                                        // Skip air, fire, and non-solid blocks
-                                        if (block == Blocks.AIR || block == Blocks.FIRE || !block.getDefaultState().isSolid()) {
+
+                                        // Skip air and fire
+                                        if (block == Blocks.AIR || block == Blocks.FIRE) {
                                             continue;
                                         }
 
