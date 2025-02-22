@@ -7,11 +7,11 @@
   "authors": [],
   "contact": {},
   "license": "All-Rights-Reserved",
-  "icon": "assets/flammableblocks/icon.png",
+  "icon": "assets/customflammableblocks/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "me.luigi.flammableblocks.FlammableBlocks"
+      "me.luigi.customflammableblocks.CustomFlammableBlocks"
     ]
   },
   "depends": {
