@@ -3,6 +3,7 @@ package me.luigi.customflammableblocks;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.CommandSource;
@@ -50,8 +51,8 @@ public class Commands {
                 .then(CommandManager.literal("reset")
                         .requires(source -> source.hasPermissionLevel(2))
                         .executes(context -> {
-                            mod.config.BURNABLE_BLOCKS = new ArrayList<>(Arrays.asList(
-                                    "minecraft:stone", // Default
+                            mod.config.BURNABLE_BLOCKS = new ArrayList<>(Arrays.asList( // Use ArrayList
+                                    "minecraft:stone",
                                     "minecraft:cobblestone",
                                     "minecraft:bricks"
                             ));
@@ -93,13 +94,13 @@ public class Commands {
                                             mod.config.BURNABLE_BLOCKS.add(blockID);
                                             mod.config.save();
 
-                                            Block block = Registries.BLOCK.get(new Identifier(blockID));
+                                            Block block = Registries.BLOCK.get(identifier); // Use the existing validated identifier
                                             mod.registerFlammable(block);
                                             source.sendMessage(Text.literal("Added: " + blockID));
                                             return 1;
                                         })))
 
-                        .then(CommandManager.literal("add_all_blocks")
+                        .then(CommandManager.literal("add_all_non_flammable_blocks")
                                 .requires(source -> source.hasPermissionLevel(2))
                                 .executes(context -> {
                                     ServerCommandSource source = context.getSource();
@@ -113,6 +114,12 @@ public class Commands {
                                             continue;
                                         }
 
+                                        // Check if the block is already flammable
+                                        FlammableBlockRegistry.Entry flammability = FlammableBlockRegistry.getDefaultInstance().get(block);
+                                        if (flammability != null && flammability.getBurnChance() > 0) {
+                                            continue; // Skip if flammable
+                                        }
+
                                         String blockId = id.toString();
                                         if (!mod.config.BURNABLE_BLOCKS.contains(blockId)) {
                                             mod.config.BURNABLE_BLOCKS.add(blockId);
@@ -122,7 +129,7 @@ public class Commands {
                                     }
 
                                     mod.config.save();
-                                    source.sendMessage(Text.literal("Added " + added + " new blocks to flammable list (excluding air)"));
+                                    source.sendMessage(Text.literal("Added " + added + " new blocks to flammable list"));
                                     LOG.info("Added {} blocks to flammable list", added);
                                     return 1;
                                 }))
@@ -182,5 +189,5 @@ public class Commands {
                                         })))
                 )
         );
-        }
     }
+}

@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 
 public class CustomFlammableBlocks implements ModInitializer {
     public static final Logger LOG = LoggerFactory.getLogger("FlammableBlocks");
@@ -22,28 +20,12 @@ public class CustomFlammableBlocks implements ModInitializer {
 
     // The configuration object loaded from disk
     public CustomFlammableBlocksConfig config;
-    private final Map<Block, int[]> defaultFlammability = new HashMap<>();  // Store default flammability data from Minecraft
 
     @Override
     public void onInitialize() {
         Path configFolder = FabricLoader.getInstance().getConfigDir();
         config = CustomFlammableBlocksConfig.load(configFolder);
         enabled = config.enabled;
-
-        // Initialize the default flammability data
-        FlammableBlockRegistry registry = FlammableBlockRegistry.getDefaultInstance();
-
-        // Populate defaultFlammability with existing registry values
-        for (Block block : Registries.BLOCK) {
-            FlammableBlockRegistry.Entry entry = registry.get(block);
-            if (entry != null) {
-                // Extract burn chance and spread chance from the Entry
-                defaultFlammability.put(block, new int[]{entry.getBurnChance(), entry.getSpreadChance()});
-            } else {
-                // Non-flammable blocks get [0, 0]
-                defaultFlammability.put(block, new int[]{0, 0});
-            }
-        }
 
         // Register commands
         commands = new Commands(this);
@@ -64,10 +46,8 @@ public class CustomFlammableBlocks implements ModInitializer {
         FlammableBlockRegistry.getDefaultInstance().add(block, 5, 20);
     }
 
-    public void resetFlammable(Block block) {
-        // Retrieve the default flammability data from stored map
-        int[] flammability = defaultFlammability.get(block);
-        FlammableBlockRegistry.getDefaultInstance().add(block, flammability[0], flammability[1]);
+    public void removeFlammable(Block block) {
+        FlammableBlockRegistry.getDefaultInstance().add(block, 0, 0);
     }
 
     public void registerAllFlammable() {
@@ -90,7 +70,7 @@ public class CustomFlammableBlocks implements ModInitializer {
                 continue;
             }
             Block block = Registries.BLOCK.get(identifier);
-            resetFlammable(block);
+            removeFlammable(block);
         }
     }
 
@@ -98,5 +78,3 @@ public class CustomFlammableBlocks implements ModInitializer {
         registerAllFlammable();
     }
 }
-
-
