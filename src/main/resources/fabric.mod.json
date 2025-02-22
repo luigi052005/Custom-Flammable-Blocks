@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "flammableblocks",
+  "version": "${version}",
+  "name": "FlammableBlocks",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/flammableblocks/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "me.luigi.flammableblocks.FlammableBlocks"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
