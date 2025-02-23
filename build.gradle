@@ -16,7 +16,6 @@ loom {
     mods {
         "flammableblocks" {
             sourceSet sourceSets.main
-            sourceSet sourceSets.client
         }
     }
 }
