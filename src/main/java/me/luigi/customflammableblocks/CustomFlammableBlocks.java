@@ -46,16 +46,16 @@ public class CustomFlammableBlocks implements ModInitializer {
         });
 
         if (enabled) {
-            registerAllFlammable();
+            registerAllFlammable(BURNABLE_BLOCKS);
         }
 
         // Backup defaults for each block that has flammability
-        for (Identifier id : Registries.BLOCK.getIds()) {
-            Block block = Registries.BLOCK.get(id);
+        for (Identifier blockID : Registries.BLOCK.getIds()) {
+            Block block = Registries.BLOCK.get(blockID);
             FlammableBlockRegistry.Entry entry = FlammableBlockRegistry.getDefaultInstance().get(block);
             if (entry != null) {
-                defaultFlammability.put(id.toString(),
-                        new FlammableBlockEntry(id.toString(), entry.getBurnChance(), entry.getSpreadChance()));
+                defaultFlammability.put(blockID.toString(),
+                        new FlammableBlockEntry(blockID.toString(), entry.getBurnChance(), entry.getSpreadChance()));
             }
         }
         LOG.info("Flammable Blocks Initialized!");
@@ -65,21 +65,22 @@ public class CustomFlammableBlocks implements ModInitializer {
         FlammableBlockRegistry.getDefaultInstance().add(block, burnChance, spreadChance);
     }
 
-    public void registerAllFlammable() {
-        for (FlammableBlockEntry entry : BURNABLE_BLOCKS) {
-            Identifier identifier = Identifier.tryParse(entry.blockId);
+    public void registerAllFlammable(List<FlammableBlockEntry> BURNABLE) {
+        for (FlammableBlockEntry entry : BURNABLE) {
+            Identifier blockID = Identifier.tryParse(entry.blockId);
             int burnChange = entry.burnChance;
             int spreadChange = entry.spreadChance;
-            if (identifier == null) {
+            if (blockID == null) {
                 LOG.error("Invalid block ID: {}", entry.blockId);
                 continue;
             }
-            Block block = Registries.BLOCK.get(identifier);
+            Block block = Registries.BLOCK.get(blockID);
+            if (!Registries.BLOCK.containsId(blockID)) {
+                LOG.error("Block not found in registry: {}", entry.blockId);
+                continue;
+            }
             registerFlammable(block, burnChange, spreadChange);
         }
-    }
-    public void reload() {
-        registerAllFlammable();
     }
 
     // Helper to return the default flammability entries backed up during initialization

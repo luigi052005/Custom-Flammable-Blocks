@@ -10,4 +10,12 @@ public class FlammableBlockEntry {
         this.burnChance = burnChance;
         this.spreadChance = spreadChance;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FlammableBlockEntry that = (FlammableBlockEntry) o;
+        return blockId.equals(that.blockId);
+    }
 }
