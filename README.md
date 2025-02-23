@@ -1,8 +1,7 @@
 # Custom-Flammable-Blocks
 
 \
-A mod that 'loops' time by using the Motion Capture Mod.
-*Motion Capture mod by mt1006. Inspired by Tombino. Original datapack by Penguin Mafia. Fabric version by Luigi & VLTNO.*
+A mod that lets you specify which blocks should be flammable and which shouldn't.
 
 # Usage
 Simply use commands to configure the mod.
