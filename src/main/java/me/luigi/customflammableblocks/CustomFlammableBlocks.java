@@ -12,11 +12,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CustomFlammableBlocks implements ModInitializer {
     public static final Logger LOG = LoggerFactory.getLogger("FlammableBlocks");
     private Commands commands;
+    public List<FlammableBlockEntry> BURNABLE_BLOCKS;
     public boolean enabled;
+
+    // Backup of Minecraft’s default flammability settings
+    private final Map<String, FlammableBlockEntry> defaultFlammability = new HashMap<>();
 
     // The configuration object loaded from disk
     public CustomFlammableBlocksConfig config;
@@ -25,6 +33,7 @@ public class CustomFlammableBlocks implements ModInitializer {
     public void onInitialize() {
         Path configFolder = FabricLoader.getInstance().getConfigDir();
         config = CustomFlammableBlocksConfig.load(configFolder);
+        BURNABLE_BLOCKS = config.BURNABLE_BLOCKS;
         enabled = config.enabled;
 
         // Register commands
@@ -39,42 +48,42 @@ public class CustomFlammableBlocks implements ModInitializer {
         if (enabled) {
             registerAllFlammable();
         }
+
+        // Backup defaults for each block that has flammability
+        for (Identifier id : Registries.BLOCK.getIds()) {
+            Block block = Registries.BLOCK.get(id);
+            FlammableBlockRegistry.Entry entry = FlammableBlockRegistry.getDefaultInstance().get(block);
+            if (entry != null) {
+                defaultFlammability.put(id.toString(),
+                        new FlammableBlockEntry(id.toString(), entry.getBurnChance(), entry.getSpreadChance()));
+            }
+        }
         LOG.info("Flammable Blocks Initialized!");
     }
 
-    public void registerFlammable(Block block) {
-        FlammableBlockRegistry.getDefaultInstance().add(block, 5, 20);
-    }
-
-    public void removeFlammable(Block block) {
-        FlammableBlockRegistry.getDefaultInstance().add(block, 0, 0);
+    public void registerFlammable(Block block, int burnChance, int spreadChance) {
+        FlammableBlockRegistry.getDefaultInstance().add(block, burnChance, spreadChance);
     }
 
     public void registerAllFlammable() {
-        for (String id : config.BURNABLE_BLOCKS) {
-            Identifier identifier = Identifier.tryParse(id);
+        for (FlammableBlockEntry entry : BURNABLE_BLOCKS) {
+            Identifier identifier = Identifier.tryParse(entry.blockId);
+            int burnChange = entry.burnChance;
+            int spreadChange = entry.spreadChance;
             if (identifier == null) {
-                LOG.error("Invalid block ID: {}", id);
+                LOG.error("Invalid block ID: {}", entry.blockId);
                 continue;
             }
             Block block = Registries.BLOCK.get(identifier);
-            registerFlammable(block);
+            registerFlammable(block, burnChange, spreadChange);
         }
     }
-
-    public void resetAllFlammable() {
-        for (String id : config.BURNABLE_BLOCKS) {
-            Identifier identifier = Identifier.tryParse(id);
-            if (identifier == null) {
-                LOG.error("Invalid block ID: {}", id);
-                continue;
-            }
-            Block block = Registries.BLOCK.get(identifier);
-            removeFlammable(block);
-        }
-    }
-
     public void reload() {
         registerAllFlammable();
+    }
+
+    // Helper to return the default flammability entries backed up during initialization
+    public ArrayList<FlammableBlockEntry> getDefaultFlammabilityEntries() {
+        return new ArrayList<>(defaultFlammability.values());
     }
 }

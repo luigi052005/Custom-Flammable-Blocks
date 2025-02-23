@@ -14,10 +14,9 @@ import java.util.List;
 
 public class CustomFlammableBlocksConfig {
     public boolean enabled = true;
-    public List<String> BURNABLE_BLOCKS = new ArrayList<>(Arrays.asList(
-            "minecraft:stone",
-            "minecraft:cobblestone",
-            "minecraft:bricks"
+    public List<FlammableBlockEntry> BURNABLE_BLOCKS = new ArrayList<>(Arrays.asList(
+            new FlammableBlockEntry("minecraft:cobblestone", 5, 20),
+            new FlammableBlockEntry("minecraft:bricks", 5, 20)
     ));
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
