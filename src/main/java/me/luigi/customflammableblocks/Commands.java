@@ -29,7 +29,7 @@ public class Commands {
     }
 
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(CommandManager.literal("flammable_blocks")
+        dispatcher.register(CommandManager.literal("cfb")
                 .then(CommandManager.literal("reload")
                         .requires(source -> source.hasPermissionLevel(2))
                         .executes(context -> {
