@@ -178,7 +178,7 @@ public class Commands {
                                         }
 
                                         mod.config.BURNABLE_BLOCKS.add(new FlammableBlockEntry(blockID, 5, 20));
-                                        mod.registerFlammable(block, 500, 500);
+                                        mod.registerFlammable(block, 5, 20);
                                         added++;
                                     }
 
