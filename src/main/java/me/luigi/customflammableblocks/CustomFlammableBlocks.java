@@ -36,6 +36,15 @@ public class CustomFlammableBlocks implements ModInitializer {
         BURNABLE_BLOCKS = config.BURNABLE_BLOCKS;
         enabled = config.enabled;
 
+        // Backup defaults for each block that has flammability
+        for (Identifier blockID : Registries.BLOCK.getIds()) {
+            Block block = Registries.BLOCK.get(blockID);
+            FlammableBlockRegistry.Entry entry = FlammableBlockRegistry.getDefaultInstance().get(block);
+            if (entry != null) {
+                defaultFlammability.put(blockID.toString(),
+                        new FlammableBlockEntry(blockID.toString(), entry.getBurnChance(), entry.getSpreadChance()));
+            }
+        }
         // Register commands
         commands = new Commands(this);
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
@@ -47,16 +56,6 @@ public class CustomFlammableBlocks implements ModInitializer {
 
         if (enabled) {
             registerAllFlammable(BURNABLE_BLOCKS);
-        }
-
-        // Backup defaults for each block that has flammability
-        for (Identifier blockID : Registries.BLOCK.getIds()) {
-            Block block = Registries.BLOCK.get(blockID);
-            FlammableBlockRegistry.Entry entry = FlammableBlockRegistry.getDefaultInstance().get(block);
-            if (entry != null) {
-                defaultFlammability.put(blockID.toString(),
-                        new FlammableBlockEntry(blockID.toString(), entry.getBurnChance(), entry.getSpreadChance()));
-            }
         }
         LOG.info("Flammable Blocks Initialized!");
     }
