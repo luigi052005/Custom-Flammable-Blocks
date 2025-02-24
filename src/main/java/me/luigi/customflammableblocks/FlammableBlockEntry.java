@@ -18,4 +18,9 @@ public class FlammableBlockEntry {
         FlammableBlockEntry that = (FlammableBlockEntry) o;
         return blockId.equals(that.blockId);
     }
+
+    @Override
+    public int hashCode() {
+        return blockId.hashCode();
+    }
 }

@@ -64,7 +64,6 @@ public class Commands {
                             mod.BURNABLE_BLOCKS.add(new FlammableBlockEntry("minecraft:cobblestone", 5, 20));
                             mod.BURNABLE_BLOCKS.add(new FlammableBlockEntry("minecraft:bricks", 5, 20));
                             mod.config.save();
-                            // Remove custom flammability and re-register the defaults
                             mod.registerAllFlammable(mod.BURNABLE_BLOCKS);
                             context.getSource().sendMessage(Text.literal("Reset all flammable blocks to Minecraft's default values."));
                             return 1;
@@ -75,17 +74,16 @@ public class Commands {
                                 .requires(source -> source.hasPermissionLevel(2))
                                 .executes(context -> {context.getSource().sendMessage(Text.literal("Usage: /flammable_blocks settings add <block id> <burn chance> <spread chance>"));return 1;})
                                 .then(CommandManager.argument("id", IdentifierArgumentType.identifier())
-                                        .suggests((context, builder) -> CommandSource.suggestMatching(
-                                                Registries.BLOCK.getIds().stream().map(Identifier::toString),
-                                                builder))
+                                        .suggests((context, builder) -> CommandSource.suggestMatching(Registries.BLOCK.getIds().stream().map(Identifier::toString), builder))
                                         .then(CommandManager.argument("burn", IntegerArgumentType.integer(0))
                                                 .then(CommandManager.argument("spread", IntegerArgumentType.integer(0))
                                                         .executes(context -> {
                                                             Identifier blockID = IdentifierArgumentType.getIdentifier(context, "id");
+                                                            ServerCommandSource source = context.getSource();
                                                             String blockName = blockID.toString();
                                                             int burn = IntegerArgumentType.getInteger(context, "burn");
                                                             int spread = IntegerArgumentType.getInteger(context, "spread");
-                                                            ServerCommandSource source = context.getSource();
+                                                            FlammableBlockEntry newEntry = new FlammableBlockEntry(blockID.toString(), burn, spread);
 
                                                             // Validate block existence
                                                             if (!Registries.BLOCK.containsId(blockID)) {
@@ -103,7 +101,8 @@ public class Commands {
                                                                 }
                                                             }
 
-                                                            mod.config.BURNABLE_BLOCKS.add(new FlammableBlockEntry(blockName, burn, spread));
+                                                            // Add the new entry
+                                                            mod.config.BURNABLE_BLOCKS.add(newEntry);
                                                             mod.config.save();
 
                                                             Block block = Registries.BLOCK.get(blockID);
@@ -111,6 +110,45 @@ public class Commands {
                                                             source.sendMessage(Text.literal("Added: " + blockName + " (burn: " + burn + ", spread: " + spread + ")"));
                                                             return 1;
                                                         })))))
+
+                        .then(CommandManager.literal("remove")
+                                .requires(source -> source.hasPermissionLevel(2))
+                                .executes(context -> {context.getSource().sendMessage(Text.literal("Please specify a block ID! EXAMPLE: minecraft:white_stained_glass"));return 1;})
+                                .then(CommandManager.argument("id", IdentifierArgumentType.identifier())
+                                        // Suggest block IDs from the config entries
+                                        .suggests((context, builder) -> CommandSource.suggestMatching(
+                                                mod.config.BURNABLE_BLOCKS.stream().map(entry -> entry.blockId),
+                                                builder))
+                                        .executes(context -> {
+                                            Identifier blockID = IdentifierArgumentType.getIdentifier(context, "id");
+                                            ServerCommandSource source = context.getSource();
+
+                                            if (blockID == null) {
+                                                source.sendMessage(Text.literal("Invalid block ID format!"));
+                                                return 0;
+                                            }
+
+                                            // Search for the matching entry in the config
+                                            FlammableBlockEntry entryToRemove = null;
+                                            for (FlammableBlockEntry entry : mod.config.BURNABLE_BLOCKS) {
+                                                if (entry.blockId.equals(blockID.toString())) {
+                                                    entryToRemove = entry;
+                                                    break;
+                                                }
+                                            }
+                                            if (entryToRemove == null) {
+                                                source.sendMessage(Text.literal("Block not in list: " + blockID));
+                                                return 0;
+                                            }
+                                            mod.config.BURNABLE_BLOCKS.remove(entryToRemove);
+                                            mod.config.save();
+
+                                            Block block = Registries.BLOCK.get(blockID);
+                                            mod.registerFlammable(block, 0, 0);
+
+                                            source.sendMessage(Text.literal("Removed: " + blockID));
+                                            return 1;
+                                        })))
 
                         .then(CommandManager.literal("add_all_non_flammable_blocks")
                                 .requires(source -> source.hasPermissionLevel(2))
@@ -122,7 +160,7 @@ public class Commands {
                                         Block block = Registries.BLOCK.get(id);
 
                                         // Skip air and fire
-                                        if (block == Blocks.AIR || block == Blocks.FIRE) {
+                                        if (block == Blocks.AIR || block == Blocks.FIRE || block == Blocks.WATER) {
                                             continue;
                                         }
 
@@ -140,7 +178,6 @@ public class Commands {
                                         }
 
                                         mod.config.BURNABLE_BLOCKS.add(new FlammableBlockEntry(blockID, 5, 20));
-                                        mod.BURNABLE_BLOCKS.add(new FlammableBlockEntry(blockID, 5, 20));
                                         mod.registerFlammable(block, 5, 20);
                                         added++;
                                     }
@@ -151,47 +188,6 @@ public class Commands {
                                     return 1;
                                 }))
 
-                        .then(CommandManager.literal("remove")
-                                .requires(source -> source.hasPermissionLevel(2))
-                                .executes(context -> {
-                                    context.getSource().sendMessage(Text.literal("Please specify a block ID! EXAMPLE: minecraft:white_stained_glass"));
-                                    return 1;
-                                })
-                                .then(CommandManager.argument("id", StringArgumentType.greedyString())
-                                        // Suggest block IDs from the config entries
-                                        .suggests((context, builder) -> CommandSource.suggestMatching(mod.config.BURNABLE_BLOCKS.stream().map(entry -> entry.blockId), builder))
-                                        .executes(context -> {
-                                            String blockID = StringArgumentType.getString(context, "id");
-                                            Identifier identifier = Identifier.tryParse(blockID);
-                                            ServerCommandSource source = context.getSource();
-
-                                            if (identifier == null) {
-                                                source.sendMessage(Text.literal("Invalid block ID format!"));
-                                                return 0;
-                                            }
-
-                                            // Search for the matching entry in the config
-                                            FlammableBlockEntry entryToRemove = null;
-                                            for (FlammableBlockEntry entry : mod.config.BURNABLE_BLOCKS) {
-                                                if (entry.blockId.equals(blockID)) {
-                                                    entryToRemove = entry;
-                                                    break;
-                                                }
-                                            }
-                                            if (entryToRemove == null) {
-                                                source.sendMessage(Text.literal("Block not in list: " + blockID));
-                                                return 0;
-                                            }
-                                            mod.config.BURNABLE_BLOCKS.remove(entryToRemove);
-                                            mod.config.save();
-
-                                            Block block = Registries.BLOCK.get(new Identifier(blockID));
-                                            mod.registerFlammable(block, 0, 0);
-
-                                            source.sendMessage(Text.literal("Removed: " + blockID));
-                                            return 1;
-                                        })))
-
                         .then(CommandManager.literal("enabled")
                                 .requires(source -> source.hasPermissionLevel(2))
                                 .executes(context -> {context.getSource().sendMessage(Text.literal("Mod enabled: " + mod.enabled));return 1;})
@@ -201,7 +197,7 @@ public class Commands {
                                             if (!newEnabled) {
                                                 mod.registerAllFlammable(mod.getDefaultFlammabilityEntries());
                                             } else {
-                                                mod.registerAllFlammable(mod.config.BURNABLE_BLOCKS);
+                                                mod.registerAllFlammable(mod.BURNABLE_BLOCKS);
                                             }
                                             mod.enabled = newEnabled;
                                             mod.config.enabled = newEnabled;
