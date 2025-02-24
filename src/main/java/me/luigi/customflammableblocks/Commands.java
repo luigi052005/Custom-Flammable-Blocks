@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.IdentifierArgumentType;
@@ -159,7 +160,7 @@ public class Commands {
                                         Block block = Registries.BLOCK.get(id);
 
                                         // Skip air and fire
-                                        if (block == Blocks.AIR || block == Blocks.FIRE) {
+                                        if (block == Blocks.AIR || block == Blocks.FIRE || block == Blocks.WATER) {
                                             continue;
                                         }
 
@@ -177,8 +178,7 @@ public class Commands {
                                         }
 
                                         mod.config.BURNABLE_BLOCKS.add(new FlammableBlockEntry(blockID, 5, 20));
-                                        mod.BURNABLE_BLOCKS.add(new FlammableBlockEntry(blockID, 5, 20));
-                                        mod.registerFlammable(block, 5, 20);
+                                        mod.registerFlammable(block, 500, 500);
                                         added++;
                                     }
 
