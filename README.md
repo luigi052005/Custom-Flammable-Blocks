@@ -1,7 +1,7 @@
 # Custom-Flammable-Blocks
 
 \
-A mod that lets you specify which blocks should be flammable and which shouldn't.
+A Minecraft mod that lets you specify which blocks should be flammable and which shouldn't.
 
 # Usage
 Simply use commands to configure the mod.
